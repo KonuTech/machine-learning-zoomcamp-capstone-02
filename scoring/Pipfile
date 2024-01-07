@@ -1,0 +1,24 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+tensorflow = "==2.7.0"
+flask = "*"
+werkzeug = "*"
+
+[dev-packages]
+notebook = "*"
+black = "*"
+isort = "*"
+flake8 = "*"
+pandas = "*"
+tensorflow = "==2.7.0"
+matplotlib = "*"
+protobuf = "==3.20.0"
+flask = "*"
+werkzeug = "*"
+
+[requires]
+python_version = "3.9"

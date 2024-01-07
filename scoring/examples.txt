@@ -1,0 +1,5 @@
+pizza:
+https://m.kafeteria.pl/shutterstock-84904912-9cb8cae338,730,0,0,0.jpg
+
+not a pizza:
+https://pliki.doradcasmaku.pl/domowe-zapiekanki-z-pieczarkami-i-serem2-4.webp

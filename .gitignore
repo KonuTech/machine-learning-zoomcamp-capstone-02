@@ -1,3 +1,4 @@
+*.tflite
 *.keras
 *.zip
 
