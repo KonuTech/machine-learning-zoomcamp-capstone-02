@@ -1,0 +1,63 @@
+ipython
+import tensorflow as tf
+import pathlib
+import os
+
+### save a model in a proper format for tf_serving
+from tensorflow import keras
+models_path = pathlib.Path(r"C:\Users\KonuTech\machine-learning-zoomcamp-capstone-02\models")
+model_filename = "model_xception_2024-01-06_22-44-37.keras"
+model_path = models_path / model_filename
+os.getcwd()
+if model_path.exists():
+    model = keras.models.load_model(model_path)
+    print(f"Model loaded successfully from: {model_path}")
+else:
+    print(f"Model file not found at: {model_path}")
+tf.saved_model.save(model, "pizza-model")
+ls -lRh pizza-model
+
+### Print details and specs about the model using dedicated CLI tool
+saved_model_cli show --dir pizza-model --all
+
+### Signature definition
+signature_def['serving_default']:
+  The given SavedModel SignatureDef contains the following input(s):
+    inputs['xception_input'] tensor_info:
+        dtype: DT_FLOAT
+        shape: (-1, 224, 224, 3)
+        name: serving_default_xception_input:0
+  The given SavedModel SignatureDef contains the following output(s):  
+    outputs['dense_9'] tensor_info:
+        dtype: DT_FLOAT
+        shape: (-1, 1)
+        name: StatefulPartitionedCall:0
+  Method name is: tensorflow/serving/predict
+
+
+### Docker run
+docker run -it --rm \
+    -p 8500:8500 \
+    -v "C:\Users\KonuTech\machine-learning-zoomcamp-capstone-02\k8s\pizza-model:/models/pizza-model/1" \
+    -e MODEL_NAME="pizza-model" \
+    tensorflow/serving:2.7.0
+
+
+### Docker build and run
+docker build -t machine-learning-zoomcamp-capstone-02:xception-001 \
+    -f pizza-model.dockerfile .
+docker run -it --rm \
+    -p 8500:8500 \
+    machine-learning-zoomcamp-capstone-02:xception-001
+docker run -it --rm -p 8500:8500 --entrypoint=bash machine-learning-zoomcamp-capstone-02:xception-001
+
+
+docker build -t machine-learning-zoomcamp-capstone-02-gateway:001 \
+    -f pizza-gateway.dockerfile .
+docker run -it --rm \
+    -p 9696:9696 \
+    machine-learning-zoomcamp-capstone-02-gateway:001
+docker run -it --rm -p 9696:9696 --entrypoint=bash machine-learning-zoomcamp-capstone-02-gateway:001
+
+
+docker compose up

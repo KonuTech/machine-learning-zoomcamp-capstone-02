@@ -1,0 +1,33 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+tensorflow = "==2.7.0"
+flask = "*"
+werkzeug = "*"
+pillow = "==10.2.0"
+protobuf = "==3.20.0"
+keras-image-helper = "*"
+tensorflow-serving-api = "==2.7.0"
+gunicorn = "*"
+
+[dev-packages]
+notebook = "*"
+black = "*"
+isort = "*"
+flake8 = "*"
+pandas = "*"
+tensorflow = "==2.7.0"
+matplotlib = "*"
+protobuf = "==3.20.0"
+flask = "*"
+werkzeug = "*"
+pillow = "==10.2.0"
+tensorflow-serving-api = "==2.7.0"
+keras-image-helper = "*"
+gunicorn = "*"
+
+[requires]
+python_version = "3.9"

@@ -7,6 +7,10 @@ name = "pypi"
 tensorflow = "==2.7.0"
 flask = "*"
 werkzeug = "*"
+pillow = "==10.2.0"
+protobuf = "==3.20.0"
+keras-image-helper = "*"
+tensorflow-serving-api = "==2.7.0"
 
 [dev-packages]
 notebook = "*"
@@ -19,6 +23,9 @@ matplotlib = "*"
 protobuf = "==3.20.0"
 flask = "*"
 werkzeug = "*"
+pillow = "==10.2.0"
+tensorflow-serving-api = "==2.7.0"
+keras-image-helper = "*"
 
 [requires]
 python_version = "3.9"

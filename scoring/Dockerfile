@@ -8,7 +8,11 @@ COPY ["predict.py", "Pipfile", "Pipfile.lock", "./"]
 
 RUN pipenv install --system --deploy
 
-COPY ["model_xception_2024-01-06_22-44-37.keras", "models/"]
+RUN mkdir models
+
+RUN mkdir logs
+
+COPY ["models/model_xception_2024-01-06_22-44-37.keras", "models/"]
 
 EXPOSE 9696
 

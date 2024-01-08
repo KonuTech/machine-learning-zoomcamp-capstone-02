@@ -1,0 +1,10 @@
+version: "3.9"
+services:
+  pizza-model:
+    image: machine-learning-zoomcamp-capstone-02:xception-001
+  gateway:
+    image: machine-learning-zoomcamp-capstone-02-gateway:001
+    environment:
+      - TF_SERVING_HOST=pizza-model:8500
+    ports:
+      - "9696:9696"
