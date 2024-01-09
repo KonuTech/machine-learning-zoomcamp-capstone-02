@@ -61,3 +61,184 @@ docker run -it --rm -p 9696:9696 --entrypoint=bash machine-learning-zoomcamp-cap
 
 
 docker compose up
+
+
+
+cd >>> C:kind\
+C:\kind>kind load docker-image machine-learning-zoomcamp-capstone-02:xception-001
+Image: "machine-learning-zoomcamp-capstone-02:xception-001" with ID "sha256:5e45971598ba189a7bd5f36a182a2e27272303a35a498cfa0a2574ba357e8ffd" not yet present on node "kind-control-plane", loading...
+
+
+KonuTech@DESKTOP-D7SFLUT MINGW64 ~/machine-learning-zoomcamp-capstone-02/k8s 
+(main)
+$ kubectl apply -f model-deployment.yaml
+deployment.apps/tf-serving-pizza-model created
+
+
+C:\kind>kubectl get pod
+NAME                                         READY   STATUS    RESTARTS         AGE
+credit-8674f9f76-x2429                       1/1     Running   46 (3h55m ago)   33d
+gateway-7d74767d4b-g6jvt                     1/1     Running   47 (3h55m ago)   34d
+tf-serving-clothing-model-55d9b7586b-b9pnb   1/1     Running   48 (3h55m ago)   34d
+tf-serving-pizza-model-c956959f9-2rm27       1/1     Running   0                35s
+
+
+kubectl describe pod tf-serving-pizza-model-c956959f9-2rm27
+KonuTech@DESKTOP-D7SFLUT MINGW64 ~/machine-learning-zoomcamp-capstone-02/k8s 
+(main)
+$ kubectl describe pod tf-serving-pizza-model-c956959f9-2rm27
+Name:             tf-serving-pizza-model-c956959f9-2rm27
+Namespace:        default
+Priority:         0
+Service Account:  default
+Node:             kind-control-plane/172.19.0.2
+Start Time:       Tue, 09 Jan 2024 11:44:56 +0100
+Labels:           app=tf-serving-pizza-model
+                  pod-template-hash=c956959f9
+Annotations:      <none>
+Status:           Running
+IP:               10.244.0.8
+IPs:
+  IP:           10.244.0.8
+Controlled By:  ReplicaSet/tf-serving-pizza-model-c956959f9
+Containers:
+  tf-serving-pizza-model:
+    Container ID:   containerd://29503a1bd2f6917ca6451a8be2d4634db562a0bdbc3af74730471cb4f42b4b99
+    Image:          machine-learning-zoomcamp-capstone-02:xception-001       
+    Image ID:       docker.io/library/import-2024-01-09@sha256:d4e5718d3a378eea28af03b33e3c71db49fbd7f1eef8afb5742241ac2fe8a788
+    Port:           8500/TCP
+    Host Port:      0/TCP
+    State:          Running
+      Started:      Tue, 09 Jan 2024 11:44:57 +0100
+    Ready:          True
+    Restart Count:  0
+    Limits:
+      cpu:     1
+      memory:  4Gi
+    Requests:
+      cpu:        1
+      memory:     4Gi
+    Environment:  <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-49shx (ro)
+Conditions:
+  Type              Status
+  Initialized       True
+  Ready             True
+  ContainersReady   True
+  PodScheduled      True
+Volumes:
+  kube-api-access-49shx:
+    Type:                    Projected (a volume that contains injected data 
+from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   Guaranteed
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  2m6s  default-scheduler  Successfully assigned default/tf-serving-pizza-model-c956959f9-2rm27 to kind-control-plane
+  Normal  Pulled     2m6s  kubelet            Container image "machine-learning-zoomcamp-capstone-02:xception-001" already present on machine
+  Normal  Created    2m6s  kubelet            Created container tf-serving-pizza-model
+  Normal  Started    2m6s  kubelet            Started container tf-serving-pizza-model
+
+
+kubectl port-forward tf-serving-pizza-model-c956959f9-2rm27 8500:8500
+KonuTech@DESKTOP-D7SFLUT MINGW64 ~/machine-learning-zoomcamp-capstone-02/k8s (main)
+$ kubectl port-forward tf-serving-pizza-model-c956959f9-2rm27 8500:8500
+Forwarding from 127.0.0.1:8500 -> 8500
+Forwarding from [::1]:8500 -> 8500
+
+
+KonuTech@DESKTOP-D7SFLUT MINGW64 ~/machine-learning-zoomcamp-capstone-02/k8s 
+(main)
+$ python gateway.py
+2024-01-09 11:53:19,057 - DEBUG - Sending prediction request to TensorFlow Serving.
+2024-01-09 11:53:19,637 - DEBUG - Received prediction response from TensorFlow Serving.
+It's a pizza!
+KonuTech@DESKTOP-D7SFLUT MINGW64 ~/machine-learning-zoomcamp-capstone-02/k8s 
+(main)
+$ kubectl port-forward tf-serving-pizza-model-c956959f9-2rm27 8500:8500
+Forwarding from 127.0.0.1:8500 -> 8500
+Forwarding from [::1]:8500 -> 8500
+Handling connection for 8500
+E0109 11:53:19.939065    8232 portforward.go:394] error copying from local connection to remote stream: read tcp6 [::1]:8500->[::1]:62955: wsarecv: Istniejące połączenie zostało gwałtownie zamknięte przez zdalnego hosta.
+
+
+
+KonuTech@DESKTOP-D7SFLUT MINGW64 ~/machine-learning-zoomcamp-capstone-02/k8s 
+(main)
+$ kubectl apply -f model-service.yaml
+service/tf-serving-pizza-model created
+KonuTech@DESKTOP-D7SFLUT MINGW64 ~/machine-learning-zoomcamp-capstone-02/k8s (main)
+$ kubectl get service
+NAME                        TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+credit                      LoadBalancer   10.96.71.230    <pending>     80:30034/TCP   33d
+gateway                     LoadBalancer   10.96.228.57    <pending>     80:31861/TCP   34d
+kubernetes                  ClusterIP      10.96.0.1       <none>        443/TCP        36d
+ping                        LoadBalancer   10.96.57.251    <pending>     80:31744/TCP   36d
+tf-serving-clothing-model   ClusterIP      10.96.23.42     <none>        8500/TCP       34d
+tf-serving-pizza-model      ClusterIP      10.96.124.110   <none>        8500/TCP       39s
+
+KonuTech@DESKTOP-D7SFLUT MINGW64 ~/machine-learning-zoomcamp-capstone-02/k8s (main)
+$ kubectl get pod
+NAME                                         READY   STATUS    RESTARTS        AGE
+credit-8674f9f76-x2429                       1/1     Running   46 (4h6m ago)   33d
+gateway-7d74767d4b-g6jvt                     1/1     Running   47 (4h6m ago)   34d
+tf-serving-clothing-model-55d9b7586b-b9pnb   1/1     Running   48 (4h6m ago)   34d
+tf-serving-pizza-model-c956959f9-2rm27       1/1     Running   0               11m
+
+
+KonuTech@DESKTOP-D7SFLUT MINGW64 ~/machine-learning-zoomcamp-capstone-02/k8s (main)
+$ kubectl exec -it tf-serving-pizza-model-c956959f9-rdhqv -- bash
+root@tf-serving-pizza-model-c956959f9-rdhqv:/# 
+
+
+
+C:\kind>.\kind.exe load docker-image machine-learning-zoomcamp-capstone-02-gateway:001
+Image: "machine-learning-zoomcamp-capstone-02-gateway:001" with ID "sha256:8168d041ad2e8d9f0c227fd5b9b56e1db4236c6e8766cc094d086866fa66e480" not yet present on node "kind-control-plane", loading...
+
+
+kubectl apply -f gateway-deployment.yaml
+KonuTech@DESKTOP-D7SFLUT MINGW64 ~/machine-learning-zoomcamp-capstone-02/k8s (main)
+$ kubectl apply -f gateway-deployment.yaml
+deployment.apps/gateway created
+
+kubectl port-forward gateway-5ffb4c9ddf-lkg9r 9696:9696
+
+python predict_test.py
+$ kubectl logs gateway-549c6cb9bc-bszf8
+[2024-01-09 13:01:22 +0000] [1] [INFO] Starting gunicorn 21.2.0
+[2024-01-09 13:01:22 +0000] [1] [INFO] Listening at: http://0.0.0.0:9696 (1)
+[2024-01-09 13:01:22 +0000] [1] [INFO] Using worker: sync
+[2024-01-09 13:01:22 +0000] [10] [INFO] Booting worker with pid: 10
+2024-01-09 13:01:22.506796: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcudart.so.11.0'; dlerror: libcudart.so.11.0: cannot open shared object file: No such file or directory        
+2024-01-09 13:01:22.506871: I tensorflow/stream_executor/cuda/cudart_stub.cc:29] Ignore above cudart dlerror if you do not have a GPU set up on your machine. 
+2024-01-09 13:02:23,874 - DEBUG - Received URL for prediction: https://m.kafeteria.pl/shutterstock-84904912-9cb8cae338,730,0,0,0.jpg
+2024-01-09 13:02:24,094 - DEBUG - Sending prediction request to TensorFlow Serving.
+2024-01-09 13:02:24,706 - DEBUG - Received prediction response from TensorFlow 
+Serving.
+2024-01-09 13:02:24,706 - DEBUG - Prediction result: It's a pizza!
+2024-01-09 13:07:26,649 - DEBUG - Received URL for prediction: https://m.kafeteria.pl/shutterstock-84904912-9cb8cae338,730,0,0,0.jpg
+2024-01-09 13:07:26,812 - DEBUG - Sending prediction request to TensorFlow Serving.
+2024-01-09 13:07:27,419 - DEBUG - Received prediction response from TensorFlow 
+Serving.
+2024-01-09 13:07:27,420 - DEBUG - Prediction result: It's a pizza!
+2024-01-09 13:08:05,407 - DEBUG - Received URL for prediction: https://m.kafeteria.pl/shutterstock-84904912-9cb8cae338,730,0,0,0.jpg
+2024-01-09 13:08:05,568 - DEBUG - Sending prediction request to TensorFlow Serving.
+2024-01-09 13:08:06,105 - DEBUG - Received prediction response from TensorFlow 
+Serving.
+2024-01-09 13:08:06,105 - DEBUG - Prediction result: It's a pizza!
+
+
+kubectl apply -f gateway-service.yaml
+
+
+kubectl port-forward service/gateway 8080:80
+python predict_test.py
+kubectl logs gateway-549c6cb9bc-bszf8

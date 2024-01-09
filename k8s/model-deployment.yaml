@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tf-serving-pizza-model
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tf-serving-pizza-model
+  template:
+    metadata:
+      labels:
+        app: tf-serving-pizza-model
+    spec:
+      containers:
+      - name: tf-serving-pizza-model
+        image: machine-learning-zoomcamp-capstone-02:xception-001
+        resources:
+          limits:
+            memory: "4Gi"
+            cpu: "1"
+        ports:
+        - containerPort: 8500
