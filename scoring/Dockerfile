@@ -14,6 +14,6 @@ RUN mkdir logs
 
 COPY ["models/model_xception_2024-01-06_22-44-37.keras", "models/"]
 
-EXPOSE 9696
+EXPOSE 6969
 
-ENTRYPOINT ["gunicorn", "--bind=0.0.0.0:9696", "predict:app"]
+ENTRYPOINT ["gunicorn", "--bind=0.0.0.0:6969", "predict:app"]

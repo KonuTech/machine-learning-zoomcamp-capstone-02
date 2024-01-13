@@ -84,15 +84,80 @@ Project Structure
 
 ##### Pre-requisties
 
-* python 3.9 or above.
+* python 3.9 or above
 * Docker Desktop, Kind, kubectl
 * pip3, pipenv
 * git-lfs
 
-### Docker deployment
+### Docker deployment (containerization)
+Before deploying to a Kubernetes cluster, we will test the model and the gateway locally using Docker Compose. To do this, we will utilize the [Dockerfile](https://github.com/KonuTech/machine-learning-zoomcamp-capstone-02/blob/main/scoring/Dockerfile), which defines the service. Additionally, a script named [predict_test.py](https://github.com/KonuTech/machine-learning-zoomcamp-capstone-02/blob/main/scoring/predict_test.py) is defined for testing the model predictions. The above script is stored locally. It passes URL to [predict.py]() which is stored on a container along with a copy of a TensorFlow model.
+
+Once in ./scoring directory - where [Dockerfile](https://github.com/KonuTech/machine-learning-zoomcamp-capstone-02/blob/main/scoring/Dockerfile) is present - you can build up the image with:
+```
+$ docker build -t machine-learning-zoomcamp-capstone-02 .
+[+] Building 120.4s (13/13) FINISHED                                                                                                                                                                                docker:default 
+ => [internal] load .dockerignore                                                                                                                                                                                             0.1s 
+ => => transferring context: 2B                                                                                                                                                                                               0.0s 
+ => [internal] load build definition from Dockerfile                                                                                                                                                                          0.1s 
+ => => transferring dockerfile: 389B                                                                                                                                                                                          0.0s 
+ => [internal] load metadata for docker.io/library/python:3.9.3-slim                                                                                                                                                          2.4s 
+ => [1/8] FROM docker.io/library/python:3.9.3-slim@sha256:3edfa765f8f77f333c50222b14552d0d0fa9f46659c1ead5f4fd10bf96178d3e                                                                                                    0.0s 
+ => [internal] load build context                                                                                                                                                                                             0.0s 
+ => => transferring context: 2.98kB                                                                                                                                                                                           0.0s 
+ => CACHED [2/8] RUN pip install pipenv                                                                                                                                                                                       0.0s 
+ => CACHED [3/8] WORKDIR /app                                                                                                                                                                                                 0.0s 
+ => [4/8] COPY [predict.py, Pipfile, Pipfile.lock, ./]                                                                                                                                                                        0.1s 
+ => [5/8] RUN pipenv install --system --deploy                                                                                                                                                                              106.8s 
+ => [6/8] RUN mkdir models                                                                                                                                                                                                    0.6s
+ => [7/8] RUN mkdir logs                                                                                                                                                                                                      0.7s
+ => [8/8] COPY [models/model_xception_2024-01-06_22-44-37.keras, models/]                                                                                                                                                     0.8s
+ => exporting to image                                                                                                                                                                                                        8.6s
+ => => exporting layers                                                                                                                                                                                                       8.6s
+ => => writing image sha256:647e632aaf90f351add90a802284d99447063eaa62e454df07223aa86f21d60e                                                                                                                                  0.0s
+ => => naming to docker.io/library/machine-learning-zoomcamp-capstone-02                                                                                                                                                      0.0s
+```
+After successful build of image you can run the Flask app stored iside it:
+```
+$ docker run -it --rm -p 6969:6969 --entrypoint=bash machine-learning-zoomcamp-capstone-02
+root@0da539eb1ed1:/app#
+
+root@5caec8e9b5fb:/app# ls
+Pipfile  Pipfile.lock  logs  models  predict.py
+
+root@0da539eb1ed1:/app# python predict.py
+2024-01-13 21:31:57.584757: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcudart.so.11.0'; dlerror: libcudart.so.11.0: cannot open shared object file: No such file or directory
+2024-01-13 21:31:57.584810: I tensorflow/stream_executor/cuda/cudart_stub.cc:29] Ignore above cudart dlerror if you do not have a GPU set up on your machine.
+2024-01-13 21:31:58.884489: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcuda.so.1'; dlerror: libcuda.so.1: cannot open shared object file: No such file or directory
+2024-01-13 21:31:58.884542: W tensorflow/stream_executor/cuda/cuda_driver.cc:269] failed call to cuInit: UNKNOWN ERROR (303)
+2024-01-13 21:31:58.884593: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:156] kernel driver does not appear to be running on this host (0da539eb1ed1): /proc/driver/nvidia/version does not exist
+2024-01-13 21:31:58.884803: I tensorflow/core/platform/cpu_feature_guard.cc:151] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+ * Serving Flask app 'predict'
+ * Debug mode: on
+2024-01-13 21:32:00.626125: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcudart.so.11.0'; dlerror: libcudart.so.11.0: cannot open shared object file: No such file or directory
+2024-01-13 21:32:00.626184: I tensorflow/stream_executor/cuda/cudart_stub.cc:29] Ignore above cudart dlerror if you do not have a GPU set up on your machine.
+2024-01-13 21:32:01.796997: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcuda.so.1'; dlerror: libcuda.so.1: cannot open shared object file: No such file or directory
+2024-01-13 21:32:01.797050: W tensorflow/stream_executor/cuda/cuda_driver.cc:269] failed call to cuInit: UNKNOWN ERROR (303)
+2024-01-13 21:32:01.797097: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:156] kernel driver does not appear to be running on this host (0da539eb1ed1): /proc/driver/nvidia/version does not exist
+2024-01-13 21:32:01.797293: I tensorflow/core/platform/cpu_feature_guard.cc:151] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+```
+#### Testing with python script
+Now from local terminal we can run:
+```
+KonuTech@DESKTOP-D7SFLUT MINGW64 ~/machine-learning-zoomcamp-capstone-02 (main)
+$ python scoring/predict_test.py
+```
+To see that containerized prediction app returend:
+```
+2024-01-13 21:32:01.797293: I tensorflow/core/platform/cpu_feature_guard.cc:151] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+It is a pizza!
+```
+<img src="static/it_is_a_pizza_docker.jpg" width="80%"/>
 
 ##### Dependencies
-The list of dependencies for a deployment using Kind is available [here](https://github.com/KonuTech/machine-learning-zoomcamp-capstone-02/blob/main/k8s/Pipfile).
+The list of dependencies for a deployment using Kind is available [here](https://github.com/KonuTech/machine-learning-zoomcamp-capstone-02/blob/main/scoring/Pipfile).
 As always first do the following:
 ```
 pip install pipenv
@@ -102,14 +167,24 @@ Next, install dependencies listed under Pipfile using following command:
 ```
 pipenv install
 ```
-
 ### Kind deployment (Kubernetes)
 
+##### Dependencies
+The list of dependencies for successful deployment of Kind cluster locally is available [here](https://github.com/KonuTech/machine-learning-zoomcamp-capstone-02/blob/main/k8s/Pipfile).
+First, as always do the following:
+```
+pip install pipenv
+pipenv shell
+```
+Next, install dependencies listed under Pipfile using following command:
+```
+pipenv install
+```
 We are going to use the tool [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/) to create a Kubernetes cluster locally. A single pod is created for each of the services: one pod for a model-serving service and another pod for the creation of a so-called gateway. This is illustrated in the architecture schema image shown previously.
 
 Here, I am assuming that you were aleady able to instal [Docker Desktop for Windows](https://docs.docker.com/desktop/install/windows-install/). 
 
-##### Prerequisites
+#### Prerequisites
 
 If you are a Windows user you can download Kind using following URL:
 
@@ -155,7 +230,15 @@ CoreDNS is running at https://127.0.0.1:59542/api/v1/namespaces/kube-system/serv
 
 To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 ```
-Next, load Docker images into the cluster:
+Now you can create bunch of Docker images:
+```
+docker build -t machine-learning-zoomcamp-capstone-02:xception-001 \
+    -f pizza-model.dockerfile .
+
+docker build -t machine-learning-zoomcamp-capstone-02-gateway:001 \
+    -f pizza-gateway.dockerfile .
+```
+Next, load previously created and tested Docker images into the cluster:
 ```
 C:\kind>kind load docker-image machine-learning-zoomcamp-capstone-02:xception-001
 Image: "machine-learning-zoomcamp-capstone-02:xception-001" with ID "sha256:5e45971598ba189a7bd5f36a182a2e27272303a35a498cfa0a2574ba357e8ffd" not yet present on node "kind-control-plane", loading...
@@ -197,7 +280,7 @@ kubectl port-forward gateway-549c6cb9bc-bszf8 9696:9696
 kubectl port-forward service/gateway 8080:80
 ```
 
-##### Testing with python script
+#### Testing with python script
 Now, since the ports were forwared we can try to make a prediction:
 ```
 python k8s/predict_test.py
@@ -216,15 +299,17 @@ $ kubectl logs gateway-549c6cb9bc-bszf8
 2024-01-13 12:15:30,713 - DEBUG - Received prediction response from TensorFlow Serving.
 2024-01-13 12:15:30,713 - DEBUG - Prediction result: It's a pizza!
 ```
+<img src="static/it_is_a_pizza_cluster.jpg" width="80%"/>
 
 
 ### Peer review criterias - a self assassment:
 * Problem description
     * 2 points: The problem is well described and it's clear what the problem the project solves
 * EDA
-    * 2 points: Extensive EDA (ranges of values, missing values, analysis of target variable, feature importance analysis)
+    * 2 points: Extensive EDA (ranges of values, missing values, analysis of target variable, feature importance analysis).
+    For images: analyzing the content of the images. For texts: frequent words, word clouds, etc
 * Model training
-    * 3 points: Trained multiple models and tuned their parameters.
+    * 3 points: Trained multiple models and tuned their parameters. For neural networks: same as previous, but also with tuning: adjusting learning rate, dropout rate, size of the inner layer, etc
 * Exporting notebook to script
     * 1 point: The logic for training the model is exported to a separate script
 * Reproducibility
@@ -234,6 +319,6 @@ $ kubectl logs gateway-549c6cb9bc-bszf8
 * Dependency and enviroment managemen
     * 2 points: Provided a file with dependencies and used virtual environment. README says how to install the dependencies and how to activate the env.
 * Containerization
-    * 2 points: There's code for deployment to cloud or kubernetes cluster (local or remote). There's a URL for testing - or video/screenshot of testing it.
+    * 2 points: The application is containerized and the README describes how to build a contained and how to run it
 * Cloud deployment
-    * 0 points: No deployment to the cloud
+    * 2 points: There's code for deployment to cloud or kubernetes cluster (local or remote). There's a URL for testing - or video/screenshot of testing it

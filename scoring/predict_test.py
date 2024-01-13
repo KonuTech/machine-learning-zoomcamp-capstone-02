@@ -1,6 +1,6 @@
 import requests
 
-server_url = 'http://127.0.0.1:9696/predict'
+server_url = 'http://127.0.0.1:6969/predict'
 
 # pizza
 data = {'url': 'https://m.kafeteria.pl/shutterstock-84904912-9cb8cae338,730,0,0,0.jpg'}
