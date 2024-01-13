@@ -7,7 +7,8 @@ The goal of the project is to apply what we have learned during the course. This
 
 In summary, the cluster consists of two services. One is responsible for serving a model, while the other handles traffic maintenance. The latter is referred to as a LoadBalancer, which acts as a gateway for requests sent to the cluster. Requests are registered and forwarded thanks to port forwarding between architectural components.
 
-The following video shows how the project works in a humorous way (click the image below to start short youtube video):
+The following video shows how the project works in a humorous way
+(click the image below to start short youtube video):
 
 [![Video Title](https://i.ytimg.com/vi/tWwCK95X6go/hq720.jpg?sqp=-oaymwEcCNAFEJQDSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLBndyO3_OWhyfNPMm7hMGzV7jX2fw)](https://youtu.be/tWwCK95X6go?si=LPqjv3k_NyPgqaAq)
 
@@ -50,7 +51,7 @@ The model was first tested as a containerized Flask app. Afterwards, the model w
 ### Architecture
 
 Here is a high-level schema of an architecture:
-![architecure](architecture.jpg)
+<img src="static/architecture.jpg" width="60%"/>
 
 Project Structure
 ------------
@@ -69,12 +70,153 @@ Project Structure
     │   │   │   │   ├── 20240106-175439
     │   │   │   │   ├── train
     │   │   │   │   ├── validation
+    |   │   │   │   ├── 20240106-181636
+    │   │   │   │   ├── train
+    │   │   │   │   ├── validation
     |
     |
     |
     ├── scoring
     │   ├── logs
     │   ├── models
+
+## Reproducibility
+
+##### Pre-requisties
+
+* python 3.9 or above.
+* Docker Desktop, Kind, kubectl
+* pip3, pipenv
+* git-lfs
+
+### Docker deployment
+
+##### Dependencies
+The list of dependencies for a deployment using Kind is available [here](https://github.com/KonuTech/machine-learning-zoomcamp-capstone-02/blob/main/k8s/Pipfile).
+As always first do the following:
+```
+pip install pipenv
+pipenv shell
+```
+Next, install dependencies listed under Pipfile using following command:
+```
+pipenv install
+```
+
+### Kind deployment (Kubernetes)
+
+We are going to use the tool [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/) to create a Kubernetes cluster locally. A single pod is created for each of the services: one pod for a model-serving service and another pod for the creation of a so-called gateway. This is illustrated in the architecture schema image shown previously.
+
+Here, I am assuming that you were aleady able to instal [Docker Desktop for Windows](https://docs.docker.com/desktop/install/windows-install/). 
+
+##### Prerequisites
+
+If you are a Windows user you can download Kind using following URL:
+
+```
+curl.exe -Lo kind-windows-amd64.exe https://kind.sigs.k8s.io/dl/v0.20.0/kind-windows-amd64
+Move-Item .\kind-windows-amd64.exe c:\kind\kind.exe
+```
+
+Next you can create a cluster with:
+```
+PS C:\kind> .\kind.exe create cluster
+```
+You should see:
+```
+Creating cluster "kind" ...
+ • Ensuring node image (kindest/node:v1.27.3) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.27.3) 🖼
+ • Preparing nodes 📦   ...
+ ✓ Preparing nodes 📦
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✓ Starting control-plane 🕹️
+ • Installing CNI 🔌  ...
+ ✓ Installing CNI 🔌
+ • Installing StorageClass 💾  ...
+ ✓ Installing StorageClass 💾
+Set kubectl context to "kind-kind"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-kind
+
+Thanks for using kind! 😊
+```
+Check if cluster is up and running with:
+```
+PS C:\kind> kubectl cluster-info --context kind-kind
+```
+You should see something like following:
+```
+Kubernetes control plane is running at https://127.0.0.1:59542
+CoreDNS is running at https://127.0.0.1:59542/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+
+To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
+```
+Next, load Docker images into the cluster:
+```
+C:\kind>kind load docker-image machine-learning-zoomcamp-capstone-02:xception-001
+Image: "machine-learning-zoomcamp-capstone-02:xception-001" with ID "sha256:5e45971598ba189a7bd5f36a182a2e27272303a35a498cfa0a2574ba357e8ffd" not yet present on node "kind-control-plane", loading...
+
+C:\kind>.\kind.exe load docker-image machine-learning-zoomcamp-capstone-02-gateway:001
+Image: "machine-learning-zoomcamp-capstone-02-gateway:001" with ID "sha256:8168d041ad2e8d9f0c227fd5b9b56e1db4236c6e8766cc094d086866fa66e480" not yet present on node "kind-control-plane", loading...
+```
+Now, we can create resources from .yaml files:
+```
+$ kubectl apply -f model-deployment.yaml
+deployment.apps/tf-serving-pizza-model created
+
+$ kubectl apply -f gateway-deployment.yaml
+deployment.apps/gateway created
+
+$ kubectl apply -f model-service.yaml
+service/tf-serving-pizza-model created
+
+kubectl apply -f gateway-service.yaml
+deployment.apps/gateway created
+```
+We can check any running pod or service:
+```
+$ kubectl get pod
+NAME                                     READY   STATUS    RESTARTS        AGE
+gateway-549c6cb9bc-bszf8                 1/1     Running   5 (3h14m ago)   3d23h
+tf-serving-pizza-model-c956959f9-rdhqv   1/1     Running   5 (3h14m ago)   4d1h
+
+$ kubectl get services
+NAME                     TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+gateway                  LoadBalancer   10.96.189.170   <pending>     80:30322/TCP   3d23h
+kubernetes               ClusterIP      10.96.0.1       <none>        443/TCP        40d
+tf-serving-pizza-model   ClusterIP      10.96.115.145   <none>        8500/TCP       4d1h
+```
+The last thing to do is to forward ports:
+```
+kubectl port-forward tf-serving-pizza-model-c956959f9-rdhqv 8500:8500
+kubectl port-forward gateway-549c6cb9bc-bszf8 9696:9696
+kubectl port-forward service/gateway 8080:80
+```
+
+##### Testing with python script
+Now, since the ports were forwared we can try to make a prediction:
+```
+python k8s/predict_test.py
+```
+After that we can confirm if the prediction was done thanks to the log from the gateway:
+```
+$ kubectl logs gateway-549c6cb9bc-bszf8
+[2024-01-13 08:59:42 +0000] [1] [INFO] Starting gunicorn 21.2.0
+[2024-01-13 08:59:42 +0000] [1] [INFO] Listening at: http://0.0.0.0:9696 (1)
+[2024-01-13 08:59:42 +0000] [1] [INFO] Using worker: sync
+[2024-01-13 08:59:42 +0000] [10] [INFO] Booting worker with pid: 10
+2024-01-13 08:59:44.013754: W tensorflow/stream_executor/platform/default/dso_loader.cc:64] Could not load dynamic library 'libcudart.so.11.0'; dlerror: libcudart.so.11.0: cannot open shared object file: No such file or directory
+2024-01-13 08:59:44.013866: I tensorflow/stream_executor/cuda/cudart_stub.cc:29] Ignore above cudart dlerror if you do not have a GPU set up on your machine.
+2024-01-13 12:15:29,210 - DEBUG - Received URL for prediction: https://m.kafeteria.pl/shutterstock-84904912-9cb8cae338,730,0,0,0.jpg
+2024-01-13 12:15:29,482 - DEBUG - Sending prediction request to TensorFlow Serving.
+2024-01-13 12:15:30,713 - DEBUG - Received prediction response from TensorFlow Serving.
+2024-01-13 12:15:30,713 - DEBUG - Prediction result: It's a pizza!
+```
+
 
 ### Peer review criterias - a self assassment:
 * Problem description
