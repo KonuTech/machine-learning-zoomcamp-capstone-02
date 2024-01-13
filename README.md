@@ -8,6 +8,7 @@ The goal of the project is to apply what we have learned during the course. This
 In summary, the cluster consists of two services. One is responsible for serving a model, while the other handles traffic maintenance. The latter is referred to as a LoadBalancer, which acts as a gateway for requests sent to the cluster. Requests are registered and forwarded thanks to port forwarding between architectural components.
 
 The following video shows how the project works in a humorous way (click the image below to start short youtube video):
+
 [![Video Title](https://i.ytimg.com/vi/tWwCK95X6go/hq720.jpg?sqp=-oaymwEcCNAFEJQDSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLBndyO3_OWhyfNPMm7hMGzV7jX2fw)](https://youtu.be/tWwCK95X6go?si=LPqjv3k_NyPgqaAq)
 
 *Image from Silicon Valley TV show, created by Mike Judge, John Altschuler, and Dave Krinsky.*
@@ -50,6 +51,30 @@ The model was first tested as a containerized Flask app. Afterwards, the model w
 
 Here is a high-level schema of an architecture:
 ![architecure](architecture.jpg)
+
+Project Structure
+------------
+    ├── data
+    │   ├── pizza_not_pizza
+    │   ├── not_pizza
+    │   ├── pizza
+    ├── k8s
+    │   ├── pizza-model
+    │   │   ├── assets
+    │   │   ├── variables
+    ├── models
+    ├── notebooks
+    │   ├── training_logs
+    │   │   ├── pizza_classification
+    │   │   │   │   ├── 20240106-175439
+    │   │   │   │   ├── train
+    │   │   │   │   ├── validation
+    |
+    |
+    |
+    ├── scoring
+    │   ├── logs
+    │   ├── models
 
 ### Peer review criterias - a self assassment:
 * Problem description
