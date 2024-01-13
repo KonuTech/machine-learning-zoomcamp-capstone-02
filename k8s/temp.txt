@@ -242,3 +242,12 @@ kubectl apply -f gateway-service.yaml
 kubectl port-forward service/gateway 8080:80
 python predict_test.py
 kubectl logs gateway-549c6cb9bc-bszf8
+
+
+kubectl get pod
+kubectl get services
+kubectl port-forward tf-serving-pizza-model-c956959f9-rdhqv 8500:8500
+kubectl port-forward gateway-549c6cb9bc-bszf8 9696:9696
+kubectl port-forward service/gateway 8080:80
+python k8s/predict_test.py
+kubectl logs gateway-549c6cb9bc-bszf8
