@@ -3,9 +3,9 @@
 
 This repository contains the final project for the [Machine Learning Zoomcamp](https://github.com/DataTalksClub/machine-learning-zoomcamp) course provided by [DataTalks.Club](https://datatalks.club/).
 
-The goal of the project is to apply what we have learned during the course. This project aims to develop an exemplary Kubernetes cluster deployment using [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/) for [TensorFlow Serving](https://www.tensorflow.org/tfx/guide/serving) architecture. The binary image classifier attempts to determine whether an image shows a pizza. The overview of the approach is explained in following [video](https://github.com/DataTalksClub/machine-learning-zoomcamp/blob/master/11-kserve/05-tensorflow-kserve.md).
+The goal of the project is to apply what we have learned during the course. This project aims to develop an exemplary Kubernetes cluster deployment using [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/) for [TensorFlow Serving](https://www.tensorflow.org/tfx/guide/serving) architecture. Trained binary image classifier attempts to determine whether an image shows a pizza. The overview of the approach is explained in following [video](https://github.com/DataTalksClub/machine-learning-zoomcamp/blob/master/10-kubernetes/05-kubernetes-intro.md).
 
-In summary, the cluster consists of two services. One is responsible for serving a model, while the other handles traffic maintenance. The latter is referred to as a LoadBalancer, which acts as a gateway for requests sent to the cluster. Requests are registered and forwarded thanks to port forwarding between architectural components.
+In summary, developed cluster consists of two services. One is responsible for serving a model, while the other handles traffic maintenance. The latter is referred to as a LoadBalancer, which acts as a gateway for requests sent to the cluster. Requests are registered and forwarded thanks to port forwarding between architectural components.
 
 The following video shows how the project works in a humorous way
 (click the image below to start short youtube video):
@@ -22,9 +22,9 @@ Due to the nature of the problem - a binary image classifier - conducted explora
 
 ## Training
 
-The experiments conducted resulted in several different training runs, using various architectures of CNN (convolutional neural networks). Various versions of pre-trained models were employed in the hope of improving the quality of the champion model. The impact of so-called Transfer Learning can be observed both [here](https://github.com/KonuTech/machine-learning-zoomcamp-capstone-02/blob/main/notebooks/02_get_champion_binary_classifier.ipynb) and on [Kaggle](https://www.kaggle.com/code/konutech/machine-learning-zoomcamp-pizza-classifier/notebook), where you can run the notebook responsible for training the champion model yourself.
+The experiments conducted resulted in several different training runs, using various architectures of CNNs (convolutional neural networks). Various versions of pre-trained models were employed in the hope of improving the quality of the champion model. The impact of so-called Transfer Learning can be observed both [here](https://github.com/KonuTech/machine-learning-zoomcamp-capstone-02/blob/main/notebooks/02_get_champion_binary_classifier.ipynb) and on [Kaggle](https://www.kaggle.com/code/konutech/machine-learning-zoomcamp-pizza-classifier/notebook), where you can run the notebook responsible for training the champion model yourself.
 
-The list of pre-trained models used in experiments where the so-called transfer learning approach was applied:
+The list of pre-trained models used in experiments where transfer learning approach was applied:
 * Xception
 * EfficientNetB3
 * InceptionV3
@@ -45,12 +45,14 @@ The model was first tested as a containerized Flask app. Afterwards, the model w
 | pylint | Python static code analysis |
 | black | Python code formatting |
 | isort | Python import sorting |
-| Docker Desktop | Containerization of servicesc |
+| Docker Desktop | Containerization of services |
 | Kind | Kubernetes cluster |
+| kubectl | cluster commands |
 
 ### Architecture
 
 Here is a high-level schema of an architecture:
+
 <img src="static/architecture.jpg" width="60%"/>
 
 Project Structure
@@ -90,7 +92,7 @@ Project Structure
 * git-lfs
 
 ### Docker deployment (containerization)
-Before deploying to a Kubernetes cluster, we will test the model and the gateway locally using Docker Compose. To do this, we will utilize the [Dockerfile](https://github.com/KonuTech/machine-learning-zoomcamp-capstone-02/blob/main/scoring/Dockerfile), which defines the service. Additionally, a script named [predict_test.py](https://github.com/KonuTech/machine-learning-zoomcamp-capstone-02/blob/main/scoring/predict_test.py) is defined for testing the model predictions. The above script is stored locally. It passes URL to [predict.py]() which is stored on a container along with a copy of a TensorFlow model.
+Before deploying to a Kubernetes cluster, the model was tested locally using Docker Compose. For this purpose, a Dockerfile was employed. The content of the [Dockerfile](https://github.com/KonuTech/machine-learning-zoomcamp-capstone-02/blob/main/scoring/Dockerfile) defines the configuration of a service. Additionally, a script named [predict_test.py](https://github.com/KonuTech/machine-learning-zoomcamp-capstone-02/blob/main/scoring/predict_test.py) is used to test predictions. This script is stored locally and passes a URL with an image of one's choice to [predict.py](). The latter is stored in a container along with a copy of a TensorFlow model.
 
 Once in ./scoring directory - where [Dockerfile](https://github.com/KonuTech/machine-learning-zoomcamp-capstone-02/blob/main/scoring/Dockerfile) is present - you can build up the image with:
 ```
@@ -142,7 +144,7 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 2024-01-13 21:32:01.797293: I tensorflow/core/platform/cpu_feature_guard.cc:151] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
 To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
 ```
-#### Testing with python script
+##### Testing with python script
 Now from local terminal we can run:
 ```
 KonuTech@DESKTOP-D7SFLUT MINGW64 ~/machine-learning-zoomcamp-capstone-02 (main)
@@ -157,34 +159,14 @@ It is a pizza!
 <img src="static/it_is_a_pizza_docker.jpg" width="80%"/>
 
 ##### Dependencies
-The list of dependencies for a deployment using Kind is available [here](https://github.com/KonuTech/machine-learning-zoomcamp-capstone-02/blob/main/scoring/Pipfile).
-As always first do the following:
-```
-pip install pipenv
-pipenv shell
-```
-Next, install dependencies listed under Pipfile using following command:
-```
-pipenv install
-```
+The list of dependencies for a deployment using Docker is available [here](https://github.com/KonuTech/machine-learning-zoomcamp-capstone-02/blob/main/scoring/Pipfile). These dependencies are installed during the build of the Docker image.
 ### Kind deployment (Kubernetes)
-
-##### Dependencies
-The list of dependencies for successful deployment of Kind cluster locally is available [here](https://github.com/KonuTech/machine-learning-zoomcamp-capstone-02/blob/main/k8s/Pipfile).
-First, as always do the following:
-```
-pip install pipenv
-pipenv shell
-```
-Next, install dependencies listed under Pipfile using following command:
-```
-pipenv install
-```
 We are going to use the tool [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/) to create a Kubernetes cluster locally. A single pod is created for each of the services: one pod for a model-serving service and another pod for the creation of a so-called gateway. This is illustrated in the architecture schema image shown previously.
 
-Here, I am assuming that you were aleady able to instal [Docker Desktop for Windows](https://docs.docker.com/desktop/install/windows-install/). 
-
-#### Prerequisites
+Here, I am assuming that you were already able to install [Docker Desktop for Windows](https://docs.docker.com/desktop/install/windows-install/). 
+##### Dependencies
+The list of dependencies for successful deployment of Kind cluster locally is available [here](https://github.com/KonuTech/machine-learning-zoomcamp-capstone-02/blob/main/k8s/Pipfile). The Pipefile is used during build of [pizza-gateway.dockerfile](https://github.com/KonuTech/machine-learning-zoomcamp-capstone-02/blob/main/k8s/pizza-gateway.dockerfile) image.
+##### Prerequisites
 
 If you are a Windows user you can download Kind using following URL:
 
@@ -280,7 +262,7 @@ kubectl port-forward gateway-549c6cb9bc-bszf8 9696:9696
 kubectl port-forward service/gateway 8080:80
 ```
 
-#### Testing with python script
+##### Testing with python script
 Now, since the ports were forwared we can try to make a prediction:
 ```
 python k8s/predict_test.py
